@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AccountForm } from './components/AccountForm';
 import { AccountList } from './components/AccountList';
+import { AccountSummary } from './components/AccountSummary';
 import type { TradingAccount, AccountFormData } from './types';
 import { BarChart3, Moon, Sun } from 'lucide-react';
 
@@ -25,12 +26,13 @@ function App() {
     setAccounts([...accounts, newAccount]);
   };
 
-  const handleUpdateMetrics = (accountId: string, metrics: Partial<TradingAccount['metrics']>) => {
+  const handleUpdateMetrics = (accountId: string, metrics: Partial<TradingAccount['metrics']>, firstTradeDate?: string) => {
     setAccounts(accounts.map(account => {
       if (account.id === accountId) {
         const updatedMetrics = { ...account.metrics, ...metrics };
         return {
           ...account,
+          dateStarted: firstTradeDate || account.dateStarted,
           metrics: {
             ...updatedMetrics,
             currentProgress: (updatedMetrics.totalProfit / updatedMetrics.profitTarget) * 100
@@ -84,6 +86,8 @@ function App() {
               onUpdateMetrics={handleUpdateMetrics}
             />
           </div>
+
+          <AccountSummary accounts={accounts} darkMode={darkMode} />
         </div>
       </main>
     </div>

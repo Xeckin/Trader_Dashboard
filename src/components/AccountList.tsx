@@ -6,7 +6,7 @@ import { parseNinjaTraderCSV } from '../utils/csvParser';
 interface AccountListProps {
   accounts: TradingAccount[];
   darkMode: boolean;
-  onUpdateMetrics: (accountId: string, metrics: Partial<TradingAccount['metrics']>) => void;
+  onUpdateMetrics: (accountId: string, metrics: Partial<TradingAccount['metrics']>, firstTradeDate?: string) => void;
 }
 
 export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountListProps) {
@@ -24,37 +24,58 @@ export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountList
     }
   };
 
-  const handleDownload = (account: TradingAccount) => {
-    if (account.strategyFile) {
-      const blob = new Blob([account.strategyFile.content], { type: 'text/plain' });
+  const handleDownloadCSV = (account: TradingAccount) => {
+    try {
+      const csvHeader = 'Period,#,Cum. net profit,Net profit,Gross profit,Gross loss,Commission,Cum. max. drawdown,Max. drawdown,% Win,Avg. trade';
+      const csvData = `${account.dateStarted},1,$${account.metrics.totalProfit.toFixed(2)},$${account.metrics.totalProfit.toFixed(2)},$${Math.max(0, account.metrics.totalProfit).toFixed(2)},$${Math.min(0, account.metrics.totalProfit).toFixed(2)},0,$${account.metrics.drawdown.toFixed(2)},$${account.metrics.drawdown.toFixed(2)},${account.metrics.winRate.toFixed(1)}%,$${(account.metrics.totalProfit / Math.max(1, account.metrics.tradingDays)).toFixed(2)}`;
+      
+      const csvContent = `${csvHeader}\n${csvData}`;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = account.strategyFile.name;
+      a.download = `${account.accountName}_performance.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      alert('Failed to download CSV file. Please try again.');
     }
   };
 
   const handleImportCSV = async (accountId: string, file: File) => {
     try {
-      const content = await file.text();
-      const metrics = parseNinjaTraderCSV(content);
-      const account = accounts.find(a => a.id === accountId);
-      
-      if (account) {
-        onUpdateMetrics(accountId, {
-          totalProfit: metrics.totalProfit,
-          winRate: metrics.winRate,
-          drawdown: metrics.drawdown,
-          tradingDays: metrics.tradingDays,
-        });
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        throw new Error('Please select a valid CSV file');
       }
+
+      const content = await file.text();
+      if (!content.trim()) {
+        throw new Error('The CSV file appears to be empty');
+      }
+
+      const { totalProfit, winRate, drawdown, tradingDays, firstTradeDate } = parseNinjaTraderCSV(content);
+      
+      onUpdateMetrics(
+        accountId,
+        {
+          totalProfit,
+          winRate,
+          drawdown,
+          tradingDays,
+        },
+        firstTradeDate
+      );
     } catch (error) {
       console.error('Error parsing CSV:', error);
-      alert('Error importing CSV file. Please check the format.');
+      alert(error instanceof Error ? error.message : 'Failed to parse CSV file');
+      
+      // Reset file input
+      if (fileInputRefs.current[accountId]) {
+        fileInputRefs.current[accountId]!.value = '';
+      }
     }
   };
 
@@ -68,6 +89,8 @@ export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountList
       if (!isNaN(target) && target > 0) {
         onUpdateMetrics(accountId, { profitTarget: target });
         setEditingTarget(null);
+      } else {
+        alert('Please enter a valid positive number');
       }
     } else if (e.key === 'Escape') {
       setEditingTarget(null);
@@ -162,18 +185,6 @@ export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountList
                   ${account.metrics.totalProfit.toFixed(2)}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Win Rate:</span>
-                <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                  {account.metrics.winRate}%
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Max Drawdown:</span>
-                <span className="font-medium text-red-400">
-                  {account.metrics.drawdown}%
-                </span>
-              </div>
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-600/20">
@@ -190,7 +201,7 @@ export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountList
                 ></div>
               </div>
               
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
                 <input
                   type="file"
                   accept=".csv"
@@ -213,6 +224,17 @@ export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountList
                 >
                   <Upload size={16} />
                   Import Trades
+                </button>
+                <button
+                  onClick={() => handleDownloadCSV(account)}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md ${
+                    darkMode 
+                      ? 'bg-gray-700/50 hover:bg-gray-600/50 text-gray-300' 
+                      : 'bg-gray-50 hover:bg-gray-100 text-gray-600'
+                  } transition-colors border border-gray-600/20`}
+                >
+                  <Download size={16} />
+                  Download Performance
                 </button>
               </div>
             </div>
