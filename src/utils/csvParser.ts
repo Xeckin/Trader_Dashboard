@@ -4,6 +4,7 @@ export function parseNinjaTraderCSV(csvContent: string): {
   drawdown: number;
   tradingDays: number;
   firstTradeDate: string;
+  strategy?: string;
 } {
   try {
     if (!csvContent || typeof csvContent !== 'string') {
@@ -25,9 +26,22 @@ export function parseNinjaTraderCSV(csvContent: string): {
     const entryTimeIndex = headers.findIndex(h => h === 'entry time');
     const cumProfitIndex = headers.findIndex(h => h === 'cum. net profit');
     const maeIndex = headers.findIndex(h => h === 'mae');
+    const strategyIndex = headers.findIndex(h => h === 'strategy');
 
     if (profitIndex === -1 || entryTimeIndex === -1 || cumProfitIndex === -1 || maeIndex === -1) {
       throw new Error('Missing required columns: Profit, Entry time, Cum. net profit, or MAE');
+    }
+
+    // Find the first non-empty strategy name
+    let strategy = '';
+    if (strategyIndex !== -1) {
+      for (let i = 1; i < lines.length; i++) {
+        const columns = lines[i].split(',').map(col => col.trim());
+        if (columns[strategyIndex] && columns[strategyIndex] !== '') {
+          strategy = columns[strategyIndex];
+          break;
+        }
+      }
     }
 
     // Remove header row and process trade data
@@ -76,6 +90,7 @@ export function parseNinjaTraderCSV(csvContent: string): {
       drawdown: maxDrawdown,
       tradingDays,
       firstTradeDate,
+      strategy: strategy || undefined
     };
   } catch (error) {
     if (error instanceof Error) {

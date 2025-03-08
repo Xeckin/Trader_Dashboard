@@ -1,39 +1,61 @@
 import React, { useState, useRef } from 'react';
-import { PlusCircle, Upload } from 'lucide-react';
+import { PlusCircle, Upload, FileCode2 } from 'lucide-react';
 import type { AccountFormData, FormOptions } from '../types';
+import { parseNinjaTraderCSV } from '../utils/csvParser';
 
 interface AccountFormProps {
-  onSubmit: (data: AccountFormData) => void;
+  onSubmit: (data: AccountFormData & { metrics?: { 
+    totalProfit: number;
+    winRate: number;
+    drawdown: number;
+    tradingDays: number;
+    profitTarget: number;
+    currentProgress: number;
+  }}) => void;
   darkMode: boolean;
   options: FormOptions;
 }
 
 export function AccountForm({ onSubmit, darkMode, options }: AccountFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<AccountFormData>({
     accountName: '',
     propFirm: '',
     platform: 'Rithmic',
-    login: '',
-    server: '',
     strategy: '',
     dateStarted: new Date().toISOString().split('T')[0],
   });
+  const [metrics, setMetrics] = useState<{
+    totalProfit: number;
+    winRate: number;
+    drawdown: number;
+    tradingDays: number;
+  } | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit({
+      ...formData,
+      metrics: metrics ? {
+        ...metrics,
+        profitTarget: 3000, // Default target
+        currentProgress: (metrics.totalProfit / 3000) * 100
+      } : undefined
+    });
     setFormData({
       accountName: '',
       propFirm: '',
       platform: 'Rithmic',
-      login: '',
-      server: '',
       strategy: '',
       dateStarted: new Date().toISOString().split('T')[0],
     });
+    setMetrics(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+    if (csvInputRef.current) {
+      csvInputRef.current.value = '';
     }
   };
 
@@ -52,6 +74,58 @@ export function AccountForm({ onSubmit, darkMode, options }: AccountFormProps) {
       alert('Please upload a .cs file');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const content = await file.text();
+      const lines = content.split('\n').map(line => line.trim()).filter(Boolean);
+      
+      if (lines.length < 2) {
+        throw new Error('CSV must contain at least a header row and one trade');
+      }
+
+      // Parse CSV headers and first row
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const accountIndex = headers.findIndex(h => h === 'account');
+
+      if (accountIndex === -1) {
+        throw new Error('CSV must contain an "Account" column');
+      }
+
+      const accountName = lines[1].split(',')[accountIndex].trim();
+      
+      // Parse the CSV using the utility function
+      const { totalProfit, winRate, drawdown, tradingDays, strategy, firstTradeDate } = parseNinjaTraderCSV(content);
+      
+      // Update form with extracted data
+      setFormData(prev => ({
+        ...prev,
+        accountName: accountName || '',
+        propFirm: '', // Leave prop firm empty as it's not in the CSV
+        platform: 'NinjaTrader', // Default to NinjaTrader since it's a NT8 export format
+        strategy: strategy || '',
+        dateStarted: firstTradeDate,
+      }));
+
+      // Set the performance metrics
+      setMetrics({
+        totalProfit,
+        winRate,
+        drawdown,
+        tradingDays,
+      });
+
+    } catch (error) {
+      console.error('Error parsing CSV:', error);
+      alert(error instanceof Error ? error.message : 'Failed to parse CSV file');
+      if (csvInputRef.current) {
+        csvInputRef.current.value = '';
       }
     }
   };
@@ -123,34 +197,6 @@ export function AccountForm({ onSubmit, darkMode, options }: AccountFormProps) {
         </div>
         <div>
           <label className={labelClasses}>
-            Login
-          </label>
-          <input
-            type="text"
-            value={formData.login}
-            onChange={(e) => setFormData({ ...formData, login: e.target.value })}
-            className={inputClasses}
-            list="logins"
-            required
-          />
-          {renderDatalist('logins', options.logins)}
-        </div>
-        <div>
-          <label className={labelClasses}>
-            Server
-          </label>
-          <input
-            type="text"
-            value={formData.server}
-            onChange={(e) => setFormData({ ...formData, server: e.target.value })}
-            className={inputClasses}
-            list="servers"
-            required
-          />
-          {renderDatalist('servers', options.servers)}
-        </div>
-        <div>
-          <label className={labelClasses}>
             Strategy
           </label>
           <input
@@ -186,13 +232,44 @@ export function AccountForm({ onSubmit, darkMode, options }: AccountFormProps) {
           />
         </div>
       </div>
-      <button
-        type="submit"
-        className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors duration-200 border border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]"
-      >
-        <PlusCircle size={20} />
-        Add Account
-      </button>
+      <div className="mt-6 space-y-2">
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors duration-200 border border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+        >
+          <PlusCircle size={20} />
+          Add Account
+        </button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-600/20"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className={`px-2 ${darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>or</span>
+          </div>
+        </div>
+
+        <input
+          type="file"
+          ref={csvInputRef}
+          accept=".csv"
+          onChange={handleImportCSV}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => csvInputRef.current?.click()}
+          className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md ${
+            darkMode 
+              ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+          } transition-colors border border-gray-600/20`}
+        >
+          <Upload size={20} />
+          Import Trades to Add Account
+        </button>
+      </div>
     </form>
   );
 }

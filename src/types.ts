@@ -3,8 +3,6 @@ export interface TradingAccount {
   accountName: string;
   propFirm: string;
   platform: 'Rithmic' | 'Tradovate' | 'NinjaTrader' | 'MT4' | 'MT5';
-  login: string;
-  server: string;
   strategy: string;
   strategyFile?: {
     name: string;
@@ -26,8 +24,6 @@ export interface AccountFormData {
   accountName: string;
   propFirm: string;
   platform: 'Rithmic' | 'Tradovate' | 'NinjaTrader' | 'MT4' | 'MT5';
-  login: string;
-  server: string;
   strategy: string;
   strategyFile?: {
     name: string;
@@ -45,7 +41,5 @@ export interface TradeMetrics {
 
 export interface FormOptions {
   propFirms: string[];
-  logins: string[];
-  servers: string[];
   strategies: string[];
 }

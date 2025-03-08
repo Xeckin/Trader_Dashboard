@@ -10,28 +10,23 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [formOptions, setFormOptions] = useState<FormOptions>({
     propFirms: [],
-    logins: [],
-    servers: [],
     strategies: [],
   });
 
   useEffect(() => {
-    // Update form options whenever accounts change
     const newOptions: FormOptions = {
       propFirms: [...new Set(accounts.map(acc => acc.propFirm))],
-      logins: [...new Set(accounts.map(acc => acc.login))],
-      servers: [...new Set(accounts.map(acc => acc.server))],
       strategies: [...new Set(accounts.map(acc => acc.strategy))],
     };
     setFormOptions(newOptions);
   }, [accounts]);
 
-  const handleAddAccount = (formData: AccountFormData) => {
+  const handleAddAccount = (formData: AccountFormData & { metrics?: TradingAccount['metrics'] }) => {
     const newAccount: TradingAccount = {
       id: crypto.randomUUID(),
       ...formData,
       status: 'In Progress',
-      metrics: {
+      metrics: formData.metrics || {
         totalProfit: 0,
         winRate: 0,
         drawdown: 0,
@@ -55,6 +50,15 @@ function App() {
             currentProgress: (updatedMetrics.totalProfit / updatedMetrics.profitTarget) * 100
           }
         };
+      }
+      return account;
+    }));
+  };
+
+  const handleUpdateAccount = (accountId: string, data: Partial<TradingAccount>) => {
+    setAccounts(accounts.map(account => {
+      if (account.id === accountId) {
+        return { ...account, ...data };
       }
       return account;
     }));
@@ -105,6 +109,7 @@ function App() {
               accounts={accounts} 
               darkMode={darkMode} 
               onUpdateMetrics={handleUpdateMetrics}
+              onUpdateAccount={handleUpdateAccount}
             />
           </div>
 
