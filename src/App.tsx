@@ -3,11 +3,12 @@ import { AccountForm } from './components/AccountForm';
 import { AccountList } from './components/AccountList';
 import { AccountSummary } from './components/AccountSummary';
 import type { TradingAccount, AccountFormData, FormOptions } from './types';
-import { BarChart3, Moon, Sun } from 'lucide-react';
+import { BarChart3, Moon, Sun, LayoutGrid, List } from 'lucide-react';
 
 function App() {
   const [accounts, setAccounts] = useState<TradingAccount[]>([]);
   const [darkMode, setDarkMode] = useState(true);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [formOptions, setFormOptions] = useState<FormOptions>({
     propFirms: [],
     strategies: [],
@@ -100,14 +101,35 @@ function App() {
           />
           
           <div>
-            <h2 className={`text-xl font-semibold ${
-              darkMode ? 'text-gray-100' : 'text-gray-800'
-            } mb-4`}>
-              Trading Accounts
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`text-xl font-semibold ${
+                darkMode ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                Trading Accounts
+              </h2>
+              <button
+                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                className={`p-2 rounded-md hover:bg-gray-700/50 transition-colors duration-200 flex items-center gap-2 ${
+                  darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                {viewMode === 'grid' ? (
+                  <>
+                    <List size={20} />
+                    <span className="text-sm font-medium">List View</span>
+                  </>
+                ) : (
+                  <>
+                    <LayoutGrid size={20} />
+                    <span className="text-sm font-medium">Grid View</span>
+                  </>
+                )}
+              </button>
+            </div>
             <AccountList 
               accounts={accounts} 
-              darkMode={darkMode} 
+              darkMode={darkMode}
+              viewMode={viewMode}
               onUpdateMetrics={handleUpdateMetrics}
               onUpdateAccount={handleUpdateAccount}
             />
