@@ -26,8 +26,9 @@ export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountList
 
   const handleDownloadCSV = (account: TradingAccount) => {
     try {
-      const csvHeader = 'Period,#,Cum. net profit,Net profit,Gross profit,Gross loss,Commission,Cum. max. drawdown,Max. drawdown,% Win,Avg. trade';
-      const csvData = `${account.dateStarted},1,$${account.metrics.totalProfit.toFixed(2)},$${account.metrics.totalProfit.toFixed(2)},$${Math.max(0, account.metrics.totalProfit).toFixed(2)},$${Math.min(0, account.metrics.totalProfit).toFixed(2)},0,$${account.metrics.drawdown.toFixed(2)},$${account.metrics.drawdown.toFixed(2)},${account.metrics.winRate.toFixed(1)}%,$${(account.metrics.totalProfit / Math.max(1, account.metrics.tradingDays)).toFixed(2)}`;
+      // Create a sample CSV with the current metrics
+      const csvHeader = 'Date,Trade #,Net Profit,Gross Profit,Gross Loss,Commission,Max Drawdown,Win Rate';
+      const csvData = `${account.dateStarted},1,${account.metrics.totalProfit},${Math.max(0, account.metrics.totalProfit)},${Math.min(0, account.metrics.totalProfit)},0,${account.metrics.drawdown},${account.metrics.winRate}`;
       
       const csvContent = `${csvHeader}\n${csvData}`;
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -128,20 +129,9 @@ export function AccountList({ accounts, darkMode, onUpdateMetrics }: AccountList
               </div>
               <div className="flex justify-between items-center">
                 <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Strategy:</span>
-                <div className="flex items-center gap-2">
-                  <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                    {account.strategy}
-                  </span>
-                  {account.strategyFile && (
-                    <button
-                      onClick={() => handleDownload(account)}
-                      className="text-blue-400 hover:text-blue-500 transition-colors"
-                      title="Download Strategy File"
-                    >
-                      <Download size={18} />
-                    </button>
-                  )}
-                </div>
+                <span className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                  {account.strategy}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className={darkMode ? 'text-gray-400' : 'text-gray-600'}>Started:</span>

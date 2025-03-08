@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AccountForm } from './components/AccountForm';
 import { AccountList } from './components/AccountList';
 import { AccountSummary } from './components/AccountSummary';
-import type { TradingAccount, AccountFormData } from './types';
+import type { TradingAccount, AccountFormData, FormOptions } from './types';
 import { BarChart3, Moon, Sun } from 'lucide-react';
 
 function App() {
   const [accounts, setAccounts] = useState<TradingAccount[]>([]);
   const [darkMode, setDarkMode] = useState(true);
+  const [formOptions, setFormOptions] = useState<FormOptions>({
+    propFirms: [],
+    logins: [],
+    servers: [],
+    strategies: [],
+  });
+
+  useEffect(() => {
+    // Update form options whenever accounts change
+    const newOptions: FormOptions = {
+      propFirms: [...new Set(accounts.map(acc => acc.propFirm))],
+      logins: [...new Set(accounts.map(acc => acc.login))],
+      servers: [...new Set(accounts.map(acc => acc.server))],
+      strategies: [...new Set(accounts.map(acc => acc.strategy))],
+    };
+    setFormOptions(newOptions);
+  }, [accounts]);
 
   const handleAddAccount = (formData: AccountFormData) => {
     const newAccount: TradingAccount = {
@@ -72,7 +89,11 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
-          <AccountForm onSubmit={handleAddAccount} darkMode={darkMode} />
+          <AccountForm 
+            onSubmit={handleAddAccount} 
+            darkMode={darkMode} 
+            options={formOptions}
+          />
           
           <div>
             <h2 className={`text-xl font-semibold ${

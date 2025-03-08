@@ -2,7 +2,7 @@ export interface TradingAccount {
   id: string;
   accountName: string;
   propFirm: string;
-  platform: 'MT4' | 'MT5' | 'Tradovate' | 'Rithmic' | 'NinjaTrader';
+  platform: 'Rithmic' | 'Tradovate' | 'NinjaTrader' | 'MT4' | 'MT5';
   login: string;
   server: string;
   strategy: string;
@@ -25,7 +25,7 @@ export interface TradingAccount {
 export interface AccountFormData {
   accountName: string;
   propFirm: string;
-  platform: 'MT4' | 'MT5' | 'Tradovate' | 'Rithmic' | 'NinjaTrader';
+  platform: 'Rithmic' | 'Tradovate' | 'NinjaTrader' | 'MT4' | 'MT5';
   login: string;
   server: string;
   strategy: string;
@@ -41,4 +41,11 @@ export interface TradeMetrics {
   winRate: number;
   drawdown: number;
   tradingDays: number;
+}
+
+export interface FormOptions {
+  propFirms: string[];
+  logins: string[];
+  servers: string[];
+  strategies: string[];
 }

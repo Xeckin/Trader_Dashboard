@@ -1,18 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { PlusCircle, Upload } from 'lucide-react';
-import type { AccountFormData } from '../types';
+import type { AccountFormData, FormOptions } from '../types';
 
 interface AccountFormProps {
   onSubmit: (data: AccountFormData) => void;
   darkMode: boolean;
+  options: FormOptions;
 }
 
-export function AccountForm({ onSubmit, darkMode }: AccountFormProps) {
+export function AccountForm({ onSubmit, darkMode, options }: AccountFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<AccountFormData>({
     accountName: '',
     propFirm: '',
-    platform: 'MT4',
+    platform: 'Rithmic',
     login: '',
     server: '',
     strategy: '',
@@ -25,7 +26,7 @@ export function AccountForm({ onSubmit, darkMode }: AccountFormProps) {
     setFormData({
       accountName: '',
       propFirm: '',
-      platform: 'MT4',
+      platform: 'Rithmic',
       login: '',
       server: '',
       strategy: '',
@@ -55,6 +56,22 @@ export function AccountForm({ onSubmit, darkMode }: AccountFormProps) {
     }
   };
 
+  const inputClasses = `w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+    darkMode 
+      ? 'bg-gray-700 border-gray-600 text-white' 
+      : 'bg-white border-gray-300 text-gray-900'
+  }`;
+
+  const labelClasses = `block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`;
+
+  const renderDatalist = (id: string, options: string[]) => (
+    <datalist id={id}>
+      {options.map((option, index) => (
+        <option key={index} value={option} />
+      ))}
+    </datalist>
+  );
+
   return (
     <form onSubmit={handleSubmit} className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-md border border-blue-500/20 backdrop-blur-sm`}>
       <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-blue-400' : 'text-gray-800'} flex items-center`}>
@@ -62,124 +79,102 @@ export function AccountForm({ onSubmit, darkMode }: AccountFormProps) {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Account Name
           </label>
           <input
             type="text"
             value={formData.accountName}
             onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
+            className={inputClasses}
             required
           />
         </div>
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Prop Firm
           </label>
           <input
             type="text"
             value={formData.propFirm}
             onChange={(e) => setFormData({ ...formData, propFirm: e.target.value })}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
+            className={inputClasses}
+            list="propFirms"
             required
           />
+          {renderDatalist('propFirms', options.propFirms)}
         </div>
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Platform
           </label>
           <select
             value={formData.platform}
             onChange={(e) => setFormData({ ...formData, platform: e.target.value as AccountFormData['platform'] })}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
+            className={inputClasses}
             required
           >
+            <option value="Rithmic">Rithmic</option>
+            <option value="Tradovate">Tradovate</option>
+            <option value="NinjaTrader">NinjaTrader</option>
             <option value="MT4">MT4</option>
             <option value="MT5">MT5</option>
-            <option value="Tradovate">Tradovate</option>
-            <option value="Rithmic">Rithmic</option>
-            <option value="NinjaTrader">NinjaTrader</option>
           </select>
         </div>
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Login
           </label>
           <input
             type="text"
             value={formData.login}
             onChange={(e) => setFormData({ ...formData, login: e.target.value })}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
+            className={inputClasses}
+            list="logins"
             required
           />
+          {renderDatalist('logins', options.logins)}
         </div>
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Server
           </label>
           <input
             type="text"
             value={formData.server}
             onChange={(e) => setFormData({ ...formData, server: e.target.value })}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
+            className={inputClasses}
+            list="servers"
             required
           />
+          {renderDatalist('servers', options.servers)}
         </div>
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Strategy
           </label>
           <input
             type="text"
             value={formData.strategy}
             onChange={(e) => setFormData({ ...formData, strategy: e.target.value })}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
+            className={inputClasses}
             required
           />
         </div>
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Date Started
           </label>
           <input
             type="date"
             value={formData.dateStarted}
             onChange={(e) => setFormData({ ...formData, dateStarted: e.target.value })}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            }`}
+            className={inputClasses}
             required
           />
         </div>
         <div>
-          <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-1`}>
+          <label className={labelClasses}>
             Strategy File (.cs)
           </label>
           <input
@@ -187,11 +182,7 @@ export function AccountForm({ onSubmit, darkMode }: AccountFormProps) {
             ref={fileInputRef}
             accept=".cs"
             onChange={handleFileChange}
-            className={`w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              darkMode 
-                ? 'bg-gray-700 border-gray-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-900'
-            } file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600`}
+            className={`${inputClasses} file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600`}
           />
         </div>
       </div>

@@ -10,56 +10,70 @@ export function parseNinjaTraderCSV(csvContent: string): {
       throw new Error('Invalid CSV content: File appears to be empty or corrupted');
     }
 
-    // Split into lines and remove empty lines and whitespace
-    const lines = csvContent.split('\n').map(line => line.trim()).filter(Boolean);
+    // Split into lines and remove empty lines
+    const lines = csvContent.split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
     
     if (lines.length < 2) {
-      throw new Error('CSV must contain at least a header row and one data row');
+      throw new Error('CSV must contain at least a header row and one trade');
     }
 
-    // Validate header row
-    const headerRow = lines[0].split(',');
-    if (headerRow.length < 10) {
-      throw new Error('Invalid CSV format: Missing required columns in header');
+    // Parse header to find column indices
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const profitIndex = headers.findIndex(h => h === 'profit');
+    const entryTimeIndex = headers.findIndex(h => h === 'entry time');
+    const cumProfitIndex = headers.findIndex(h => h === 'cum. net profit');
+    const maeIndex = headers.findIndex(h => h === 'mae');
+
+    if (profitIndex === -1 || entryTimeIndex === -1 || cumProfitIndex === -1 || maeIndex === -1) {
+      throw new Error('Missing required columns: Profit, Entry time, Cum. net profit, or MAE');
     }
 
-    // Get the first trade date from the first data row
-    const firstDataRow = lines[1].split(',');
-    if (!firstDataRow[0] || !/^\d{4}-\d{2}-\d{2}$/.test(firstDataRow[0])) {
-      throw new Error('Invalid date format in CSV. Expected format: YYYY-MM-DD');
-    }
-    const firstTradeDate = firstDataRow[0];
+    // Remove header row and process trade data
+    const trades = lines.slice(1).map(line => {
+      const columns = line.split(',').map(col => col.trim());
+      return {
+        profit: parseFloat(columns[profitIndex].replace(/[($)]/g, '')) || 0,
+        entryTime: new Date(columns[entryTimeIndex]),
+        cumProfit: parseFloat(columns[cumProfitIndex].replace(/[($)]/g, '')) || 0,
+        mae: parseFloat(columns[maeIndex].replace(/[($)]/g, '')) || 0
+      };
+    });
 
-    // Get the last line for the most recent metrics
-    const lastLine = lines[lines.length - 1].split(',');
+    // Calculate metrics
+    const totalProfit = trades[trades.length - 1].cumProfit;
+    const winningTrades = trades.filter(t => t.profit > 0).length;
+    const winRate = (winningTrades / trades.length) * 100;
 
-    // Validate data row
-    if (lastLine.length < 10) {
-      throw new Error('Invalid CSV format: Missing required columns in data row');
-    }
+    // Calculate maximum drawdown
+    let maxDrawdown = 0;
+    let peak = 0;
+    trades.forEach(trade => {
+      const currentValue = trade.cumProfit;
+      peak = Math.max(peak, currentValue);
+      const drawdown = Math.abs(peak - currentValue);
+      maxDrawdown = Math.max(maxDrawdown, drawdown);
+    });
 
-    // Parse values with strict validation
-    const totalProfitStr = lastLine[2]?.replace(/[$,]/g, '');
-    const winRateStr = lastLine[9]?.replace('%', '');
-    const drawdownStr = lastLine[7]?.replace(/[$,]/g, '');
+    // Get first trade date
+    const firstTrade = trades[0];
+    const firstTradeDate = firstTrade.entryTime.toISOString().split('T')[0];
 
-    if (!totalProfitStr || !winRateStr || !drawdownStr) {
-      throw new Error('Invalid CSV format: Missing required values');
-    }
+    // Count unique trading days
+    const uniqueDays = new Set(
+      trades.map(t => t.entryTime.toISOString().split('T')[0])
+    );
+    const tradingDays = uniqueDays.size;
 
-    const totalProfit = parseFloat(totalProfitStr);
-    const winRate = parseFloat(winRateStr);
-    const drawdown = Math.abs(parseFloat(drawdownStr));
-    const tradingDays = lines.length - 1; // Subtract header row
-
-    if (isNaN(totalProfit) || isNaN(winRate) || isNaN(drawdown)) {
+    if (isNaN(totalProfit) || isNaN(winRate) || isNaN(maxDrawdown) || isNaN(tradingDays)) {
       throw new Error('Invalid numeric values in CSV');
     }
 
     return {
       totalProfit,
       winRate,
-      drawdown,
+      drawdown: maxDrawdown,
       tradingDays,
       firstTradeDate,
     };
