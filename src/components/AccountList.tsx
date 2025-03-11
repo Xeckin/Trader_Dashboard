@@ -85,7 +85,7 @@ export function AccountList({ accounts, darkMode, viewMode, onUpdateMetrics, onU
       case 'Passed':
         return 'shadow-[0_0_20px_rgba(57,255,20,0.3)] border-cyber-green/30';
       case 'Failed':
-        return 'shadow-[0_0_20px_rgba(255,0,51,0.3)] border-cyber-pink/30';
+        return 'shadow-[0_0_20px_rgba(255,0,51,0.4)] border-red-500/40';
       default:
         return 'shadow-[0_0_20px_rgba(0,255,255,0.3)] border-cyber-blue/30';
     }

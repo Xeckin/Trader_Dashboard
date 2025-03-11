@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AccountForm } from './components/AccountForm';
 import { AccountList } from './components/AccountList';
 import { AccountSummary } from './components/AccountSummary';
+import { Reports } from './components/Reports';
 import type { TradingAccount, AccountFormData, FormOptions } from './types';
-import { BarChart3, Moon, Sun, LayoutGrid, List } from 'lucide-react';
+import { BarChart3, Moon, Sun, LayoutGrid, List, FileText } from 'lucide-react';
 
 function App() {
   const [accounts, setAccounts] = useState<TradingAccount[]>([]);
@@ -65,62 +67,81 @@ function App() {
     }));
   };
 
-  return (
-    <div className="min-h-screen bg-cyber-black cyberpunk-grid transition-all duration-300">
-      <header className="bg-cyber-black/90 backdrop-blur-lg border-b border-cyber-blue/20 relative overflow-hidden">
-        <div className="scanline">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+  const renderHeader = () => (
+    <header className="bg-cyber-black/90 backdrop-blur-lg border-b border-cyber-blue/20 relative overflow-hidden">
+      <div className="scanline">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link to="/" className="flex items-center gap-2">
                 <BarChart3 className="h-8 w-8 text-cyber-blue animate-glow" />
                 <h1 className="text-2xl font-bold text-cyber-blue neon-text">
-                  Trading Performance Dashboard
+                  Trading Performance
                 </h1>
-              </div>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                  className="cyber-button p-2 rounded-md bg-cyber-black/50 border border-cyber-blue/20 text-cyber-blue hover:border-cyber-blue/40 transition-all duration-300"
-                >
-                  {viewMode === 'grid' ? <List size={20} /> : <LayoutGrid size={20} />}
-                </button>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="cyber-button p-2 rounded-md bg-cyber-black/50 border border-cyber-blue/20 text-cyber-blue hover:border-cyber-blue/40 transition-all duration-300"
-                >
-                  {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-                </button>
-              </div>
+              </Link>
+              <Link
+                to="/reports"
+                className="flex items-center gap-2 px-4 py-2 rounded-md bg-cyber-black/50 border border-cyber-blue/20 text-cyber-blue hover:bg-cyber-blue/10 transition-all duration-300"
+              >
+                <FileText size={20} />
+                <span>Reports</span>
+              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                className="cyber-button p-2 rounded-md bg-cyber-black/50 border border-cyber-blue/20 text-cyber-blue hover:border-cyber-blue/40 transition-all duration-300"
+              >
+                {viewMode === 'grid' ? <List size={20} /> : <LayoutGrid size={20} />}
+              </button>
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className="cyber-button p-2 rounded-md bg-cyber-black/50 border border-cyber-blue/20 text-cyber-blue hover:border-cyber-blue/40 transition-all duration-300"
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
             </div>
           </div>
         </div>
-      </header>
+      </div>
+    </header>
+  );
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
-        <div className="space-y-8">
-          <AccountForm 
-            onSubmit={handleAddAccount} 
-            darkMode={darkMode} 
-            options={formOptions}
-          />
-          
-          <div>
-            <h2 className="text-xl font-semibold text-cyber-blue neon-text mb-4">
-              Trading Accounts
-            </h2>
-            <AccountList 
-              accounts={accounts} 
-              darkMode={darkMode}
-              viewMode={viewMode}
-              onUpdateMetrics={handleUpdateMetrics}
-              onUpdateAccount={handleUpdateAccount}
-            />
-          </div>
-
-          <AccountSummary accounts={accounts} darkMode={darkMode} />
-        </div>
-      </main>
-    </div>
+  return (
+    <Router>
+      <div className="min-h-screen bg-cyber-black cyberpunk-grid transition-all duration-300">
+        {renderHeader()}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+          <Routes>
+            <Route path="/" element={
+              <div className="space-y-8">
+                <AccountForm 
+                  onSubmit={handleAddAccount} 
+                  darkMode={darkMode} 
+                  options={formOptions}
+                />
+                <div>
+                  <h2 className="text-xl font-semibold text-cyber-blue neon-text mb-4">
+                    Trading Accounts
+                  </h2>
+                  <AccountList 
+                    accounts={accounts} 
+                    darkMode={darkMode}
+                    viewMode={viewMode}
+                    onUpdateMetrics={handleUpdateMetrics}
+                    onUpdateAccount={handleUpdateAccount}
+                  />
+                </div>
+                <AccountSummary accounts={accounts} darkMode={darkMode} />
+              </div>
+            } />
+            <Route path="/reports" element={
+              <Reports accounts={accounts} darkMode={darkMode} />
+            } />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 }
 
