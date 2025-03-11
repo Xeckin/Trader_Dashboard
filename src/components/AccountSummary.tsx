@@ -22,19 +22,19 @@ export function AccountSummary({ accounts, darkMode }: AccountSummaryProps) {
       icon: <TrendingUp className="w-6 h-6" />,
       label: 'In Progress',
       value: `${activeAccounts} account${activeAccounts !== 1 ? 's' : ''}`,
-      color: 'text-blue-400'
+      color: 'text-cyber-blue'
     },
     {
       icon: <Target className="w-6 h-6" />,
       label: 'Success Rate',
       value: `${successRate.toFixed(1)}%`,
-      color: 'text-green-400'
+      color: 'text-cyber-green'
     },
     {
       icon: <ArrowDown className="w-6 h-6" />,
       label: 'Failed Accounts',
       value: `${failedAccounts} of ${totalAccounts}`,
-      color: 'text-red-400'
+      color: 'text-cyber-pink'
     }
   ];
 
@@ -49,7 +49,7 @@ export function AccountSummary({ accounts, darkMode }: AccountSummaryProps) {
       icon: <AlertTriangle className="w-6 h-6" />,
       label: 'Near Limits',
       value: `${accountsNearLimit} account${accountsNearLimit > 1 ? 's' : ''}`,
-      color: 'text-yellow-400'
+      color: 'text-cyber-pink'
     }
   ] : [];
 
@@ -64,34 +64,33 @@ export function AccountSummary({ accounts, darkMode }: AccountSummaryProps) {
       icon: <CheckCircle2 className="w-6 h-6" />,
       label: 'Near Target',
       value: `${accountsNearTarget} account${accountsNearTarget > 1 ? 's' : ''}`,
-      color: 'text-green-400'
+      color: 'text-cyber-green'
     }
   ] : [];
 
   return (
-    <div className={`mt-12 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg border border-blue-500/20 overflow-hidden`}>
-      <div className="p-6">
-        <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-blue-400' : 'text-gray-800'}`}>
+    <div className="mt-12 relative">
+      <div className="absolute inset-0 bg-gradient-to-r from-cyber-blue/5 to-cyber-pink/5 rounded-lg" />
+      <div className="relative bg-cyber-black/90 p-6 rounded-lg border border-cyber-blue/20 cyberpunk-shadow backdrop-blur-sm">
+        <h2 className="text-2xl font-bold mb-6 text-cyber-blue neon-text">
           Portfolio Summary
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...stats, ...warningStats, ...successStats].map((stat, index) => (
             <div
               key={index}
-              className={`${
-                darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
-              } p-6 rounded-lg border border-blue-500/10 backdrop-blur-sm relative overflow-hidden group`}
+              className="relative bg-cyber-black/80 p-6 rounded-lg border border-cyber-blue/20 backdrop-blur-sm overflow-hidden group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-r from-cyber-blue/5 to-cyber-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-center gap-4">
-                <div className={`${stat.color} bg-white/5 p-3 rounded-lg`}>
+                <div className={`${stat.color} bg-cyber-black/50 p-3 rounded-lg neon-pulse`}>
                   {stat.icon}
                 </div>
                 <div>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <p className="text-sm text-cyber-blue/60">
                     {stat.label}
                   </p>
-                  <p className={`text-xl font-bold ${stat.color}`}>
+                  <p className={`text-xl font-bold ${stat.color} neon-text`}>
                     {stat.value}
                   </p>
                 </div>

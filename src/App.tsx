@@ -66,33 +66,37 @@ function App() {
   };
 
   return (
-    <div className={`min-h-screen transition-colors duration-200 ${
-      darkMode ? 'bg-gray-900' : 'bg-gray-100'
-    }`}>
-      <header className={`${
-        darkMode ? 'bg-gray-800' : 'bg-white'
-      } shadow-lg border-b border-blue-500/20`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BarChart3 className={`h-8 w-8 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-              <h1 className={`text-2xl font-bold ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
-                Trading Performance Dashboard
-              </h1>
+    <div className="min-h-screen bg-cyber-black cyberpunk-grid transition-all duration-300">
+      <header className="bg-cyber-black/90 backdrop-blur-lg border-b border-cyber-blue/20 relative overflow-hidden">
+        <div className="scanline">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-8 w-8 text-cyber-blue animate-glow" />
+                <h1 className="text-2xl font-bold text-cyber-blue neon-text">
+                  Trading Performance Dashboard
+                </h1>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                  className="cyber-button p-2 rounded-md bg-cyber-black/50 border border-cyber-blue/20 text-cyber-blue hover:border-cyber-blue/40 transition-all duration-300"
+                >
+                  {viewMode === 'grid' ? <List size={20} /> : <LayoutGrid size={20} />}
+                </button>
+                <button
+                  onClick={() => setDarkMode(!darkMode)}
+                  className="cyber-button p-2 rounded-md bg-cyber-black/50 border border-cyber-blue/20 text-cyber-blue hover:border-cyber-blue/40 transition-all duration-300"
+                >
+                  {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-2 rounded-full hover:bg-gray-700/50 transition-colors duration-200 ${
-                darkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}
-            >
-              {darkMode ? <Sun size={24} /> : <Moon size={24} />}
-            </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
         <div className="space-y-8">
           <AccountForm 
             onSubmit={handleAddAccount} 
@@ -101,31 +105,9 @@ function App() {
           />
           
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-xl font-semibold ${
-                darkMode ? 'text-gray-100' : 'text-gray-800'
-              }`}>
-                Trading Accounts
-              </h2>
-              <button
-                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className={`p-2 rounded-md hover:bg-gray-700/50 transition-colors duration-200 flex items-center gap-2 ${
-                  darkMode ? 'text-gray-300 hover:text-gray-100' : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                {viewMode === 'grid' ? (
-                  <>
-                    <List size={20} />
-                    <span className="text-sm font-medium">List View</span>
-                  </>
-                ) : (
-                  <>
-                    <LayoutGrid size={20} />
-                    <span className="text-sm font-medium">Grid View</span>
-                  </>
-                )}
-              </button>
-            </div>
+            <h2 className="text-xl font-semibold text-cyber-blue neon-text mb-4">
+              Trading Accounts
+            </h2>
             <AccountList 
               accounts={accounts} 
               darkMode={darkMode}
