@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Upload, Download } from 'lucide-react';
 import type { TradingAccount } from '../types';
 
 interface EditAccountModalProps {
@@ -10,6 +10,7 @@ interface EditAccountModalProps {
 }
 
 export function EditAccountModal({ account, darkMode, onClose, onSave }: EditAccountModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     accountName: account.accountName,
     propFirm: account.propFirm,
@@ -23,6 +24,44 @@ export function EditAccountModal({ account, darkMode, onClose, onSave }: EditAcc
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
+  };
+
+  const handleImportCSV = async (file: File) => {
+    try {
+      const content = await file.text();
+      onSave({
+        ...formData,
+        csvFile: {
+          name: file.name,
+          content
+        }
+      });
+    } catch (error) {
+      console.error('Error importing CSV:', error);
+      alert('Failed to import CSV file. Please try again.');
+    }
+  };
+
+  const handleDownloadCSV = () => {
+    if (!account.csvFile) {
+      alert('No Rithmic data available for this account');
+      return;
+    }
+
+    try {
+      const blob = new Blob([account.csvFile.content], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = account.csvFile.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      alert('Failed to download Rithmic data. Please try again.');
+    }
   };
 
   const inputClasses = `w-full p-2 rounded-md border-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
@@ -133,6 +172,49 @@ export function EditAccountModal({ account, darkMode, onClose, onSave }: EditAcc
               <option value="Passed">Passed</option>
               <option value="Failed">Failed</option>
             </select>
+          </div>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleImportCSV(file);
+              }
+            }}
+          />
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md ${
+                darkMode 
+                  ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              } transition-colors`}
+            >
+              <Upload size={20} />
+              Import Rithmic Data
+            </button>
+
+            {account.csvFile && (
+              <button
+                type="button"
+                onClick={handleDownloadCSV}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md ${
+                  darkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                } transition-colors`}
+              >
+                <Download size={20} />
+                Download Rithmic Data
+              </button>
+            )}
           </div>
 
           <div className="flex gap-4 pt-4">

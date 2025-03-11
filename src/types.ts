@@ -8,6 +8,10 @@ export interface TradingAccount {
     name: string;
     content: string;
   };
+  csvFile?: {
+    name: string;
+    content: string;
+  };
   dateStarted: string;
   status: 'In Progress' | 'Passed' | 'Failed';
   login?: string;
@@ -41,6 +45,10 @@ export interface AccountFormData {
   platform: 'Rithmic' | 'Tradovate' | 'NinjaTrader' | 'MT4' | 'MT5';
   strategy: string;
   strategyFile?: {
+    name: string;
+    content: string;
+  };
+  csvFile?: {
     name: string;
     content: string;
   };
