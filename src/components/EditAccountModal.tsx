@@ -14,8 +14,8 @@ export function EditAccountModal({ account, darkMode, onClose, onSave }: EditAcc
     accountName: account.accountName,
     propFirm: account.propFirm,
     platform: account.platform,
-    login: account.login,
-    server: account.server,
+    login: account.login || '',
+    server: account.server || '',
     strategy: account.strategy,
     status: account.status,
   });
@@ -97,7 +97,6 @@ export function EditAccountModal({ account, darkMode, onClose, onSave }: EditAcc
               value={formData.login}
               onChange={(e) => setFormData({ ...formData, login: e.target.value })}
               className={inputClasses}
-              required
             />
           </div>
 
@@ -108,7 +107,6 @@ export function EditAccountModal({ account, darkMode, onClose, onSave }: EditAcc
               value={formData.server}
               onChange={(e) => setFormData({ ...formData, server: e.target.value })}
               className={inputClasses}
-              required
             />
           </div>
 
@@ -132,7 +130,7 @@ export function EditAccountModal({ account, darkMode, onClose, onSave }: EditAcc
               required
             >
               <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
+              <option value="Passed">Passed</option>
               <option value="Failed">Failed</option>
             </select>
           </div>
