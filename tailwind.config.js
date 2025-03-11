@@ -6,7 +6,7 @@ export default {
       colors: {
         cyber: {
           black: '#0D0D0D',
-          pink: '#FF00FF',
+          pink: '#FF0033', // Changed from magenta to red
           blue: '#00FFFF',
           green: '#39FF14',
         },
